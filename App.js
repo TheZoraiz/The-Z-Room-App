@@ -5,6 +5,7 @@ import io from 'socket.io-client'
 import Constants from 'expo-constants';
 import Dialog from "react-native-dialog";
 
+const Stuff = require('./constants.js');
 
 export default class App extends React.Component {
 
@@ -22,11 +23,10 @@ export default class App extends React.Component {
   }
 
   componentDidMount() {
-    // this.socket = io('http://192.168.43.81:3000');
-    this.socket = io('https://chat-app1111.herokuapp.com/');
+    // this.socket = io(Stuff.localhost);
+    this.socket = io(Stuff.remoteServer);
     this.socket.on('chatmessage', texts => {
       // ts = texts;
-      console.log(texts);
       this.setState({ messages: [...texts], message: this.state.message, id: this.state.id + 1, deviceTemp: this.state.deviceTemp, connections: this.state.connections})
     });
     this.socket.on('connections', connection => {
@@ -53,13 +53,11 @@ export default class App extends React.Component {
   }
 
   render() {
-    let chatMsgs = this.state.messages.map(msg => (
-      <View style={styles.panel}>
+    let chatMsgs = this.state.messages.map((msg, key) => (
+      <View style={styles.panel} key={key}>
         <Text style={styles.clients}>{msg.name + ':'}</Text>
         <Text key={this.state.id} style={styles.messages}>{msg.message}</Text>
       </View>));
-
-    console.log(this.state.messages);
 
     return (
       <View style={styles.container}>
@@ -72,14 +70,6 @@ export default class App extends React.Component {
           ></Dialog.Input>
           <Dialog.Button label="Submit" onPress={() => {
             if(this.state.username.length != 0)
-              Alert.alert(
-                'From Zoraiz:',
-                'Hello Guys. I set a remote server to record the messages for the app but it looks like that server can restart on its own haha. So please, don\'t trust the app to keep your record. I\'m really sorry :(',
-                [
-                  { text: 'OK Sempai', onPress: () => console.log('OK Pressed') }
-                ],
-                { cancelable: false }
-              );
               this.setState( { visible: false } );
             }}/>
         </Dialog.Container>
@@ -104,7 +94,7 @@ export default class App extends React.Component {
           onSubmitEditing={this.submitMessage}
           onChangeText={this.changeMsg}
         /> 
-        {/* <StatusBar style="auto" /> */}
+        <StatusBar style='dark'/>
       </View>
     );
   }
