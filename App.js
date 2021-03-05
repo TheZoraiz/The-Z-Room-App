@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { TextInput, StyleSheet, Text, View, ScrollView, Alert } from 'react-native';
+import { TextInput, StyleSheet, Text, View, ScrollView, ActivityIndicator } from 'react-native';
 import io from 'socket.io-client'
 import Constants from 'expo-constants';
 import Dialog from "react-native-dialog";
@@ -19,6 +19,7 @@ export default class App extends React.Component {
       deviceTemp: Constants.deviceName,
       connections: 0,
       visible: true,
+      loading: true,
     };
   }
 
@@ -28,11 +29,11 @@ export default class App extends React.Component {
     this.socket.on('chatmessage', texts => {
       // ts = texts;
       this.setState({ messages: [...texts], message: this.state.message, id: this.state.id + 1, deviceTemp: this.state.deviceTemp, connections: this.state.connections})
+      this.setState({ loading   : false });
     });
     this.socket.on('connections', connection => {
       this.setState({ messages: this.state.messages, message: this.state.message, id: this.state.id + 1, deviceTemp: this.state.deviceTemp, connections: connection});
     })
-
   }
 
   submitMessage = () => {
@@ -79,11 +80,15 @@ export default class App extends React.Component {
           <Text style={[styles.clients, {fontSize: 13, marginTop: 0, color: 'lightgreen'}]}>{"Users Connected: " + this.state.connections}</Text>
         </View>
 
-        <ScrollView contentContainerStyle={styles.container2} 
-        ref={ref => {this.scrollView = ref}}
-        onContentSizeChange={() => this.scrollView.scrollToEnd({animated: true})}>
-          {chatMsgs}
+        
+        <ScrollView 
+          ref={ref => {this.scrollView = ref}}
+          onContentSizeChange={() => this.scrollView.scrollToEnd({animated: true})}
+        >
+          {this.state.loading ? <ActivityIndicator style={styles.loading} size='large' color='lightgreen' /> : chatMsgs}
         </ScrollView>
+        
+
 
         <TextInput
           style={styles.input}
@@ -155,5 +160,9 @@ const styles = StyleSheet.create({
 
   titleContainer: {
     alignItems: 'center',
+  },
+
+  loading: {
+    marginTop: '60%',
   },
 });
